@@ -1,0 +1,1119 @@
+/* ==========================================================================
+   1. IMPORTS & VARIÁVEIS GLOBAIS (:ROOT)
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Metal+Mania&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+:root {
+    /* Cores Principais */
+    --cor-texto: azure;           /* Antigo: azure */
+    --cor-fundo-ui: #050014;      /* Antigo: #050014 (Fundo das caixas e menus) */
+    --cor-fundo-dark: #000000;    /* Antigo: #000000 (Fundo profundo) */
+    --cor-destaque-red: #c62828;  /* Antigo: #c62828 (Sangue/Destaque) */
+    
+    /* Variáveis de apoio */
+    --borda-padrao: 2px solid var(--cor-texto);
+}
+
+/* ==========================================================================
+   2. EFEITOS VISUAIS (NOISE, SCANLINES, VIDEO BG)
+   ========================================================================== */
+
+/* Camada de Vídeo de Fundo */
+.video-layer {
+    position: fixed;
+    inset: 0;
+    z-index: -5;
+    background-color: var(--cor-fundo-dark);
+}
+
+.video-layer video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: contrast(1.1) brightness(0.7) saturate(0.9);
+    opacity: 1;
+    transition: opacity 0.7s ease-in-out;
+}
+
+.video-layer video.fade-out {
+    opacity: 0;
+}
+
+.video-layer, #noiseCanvas, body::after {
+    position: fixed; /* Fixed garante que fica preso na janela, não no documento */
+    height: 100vh; /* Fallback */
+    height: 100dvh; /* Moderno */
+    width: 100vw;
+}
+
+/* Efeito Noise (Ruído) */
+#noiseCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 900;
+    opacity: 0.15;
+}
+
+/* Scanlines (Linhas de TV antigas) */
+body::after {
+    content: " ";
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient( to bottom, rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50% );
+    background-size: 100% 4px;
+    z-index: 901;
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   3. SISTEMA DE CURSOR
+   ========================================================================== */
+
+body {
+    cursor: url('img/cursor-normal.png') 0 0, auto;
+}
+
+/* Força cursor normal em elementos de texto */
+div, span, p, h1, h2, h3, h4, h5, h6, img, section, li, ul, label {
+    cursor: url('img/cursor-normal.png') 0 0, default;
+}
+
+a:hover, 
+button:hover, 
+.botao-voltar:hover,
+.botao-escolha:hover,
+i:hover, 
+input[type="checkbox"]:hover,
+input[type="radio"]:hover,
+label:hover, 
+select:hover,
+option:hover,
+.door-container:hover {
+    cursor: url('img/cursor-click.png') 0 0, pointer !important;
+}
+
+/* Cursor no Slider de Volume */
+input[type="range"],
+input[type="range"]::-webkit-slider-thumb:hover,
+input[type="range"]::-moz-range-thumb:hover,
+input[type="range"]::-webkit-slider-runnable-track:hover,
+input[type="range"]::-moz-range-track:hover {
+    cursor: url('img/cursor-click.png') 0 0, pointer !important;
+}
+
+body.is-clicking,
+body.is-clicking * { 
+    cursor: url('img/cursor-click.png') 0 0, pointer !important; 
+}
+
+a:active, 
+button:active, 
+select:active,
+input:active, 
+input:focus {
+    cursor: url('img/cursor-click.png') 0 0, pointer !important;
+}
+
+/* ==========================================================================
+   4. CLASSES UTILITÁRIAS & GLOBAIS
+   ========================================================================== */
+
+/* Gerenciamento de Telas (Screens) */
+.screen {
+    padding-top: 0px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow-y: auto; 
+    overflow-x: hidden;
+    padding: 20px; 
+    box-sizing: border-box;
+    background: transparent;
+    transition: opacity 0.5s ease;
+}
+
+.screen::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 25, 35, 0.75);
+    z-index: -1;
+}
+
+.screen.active {
+    opacity: 1;
+    z-index: 10;
+    pointer-events: all;
+}
+
+.screen.hidden {
+    opacity: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Utilitários de Texto e Display */
+.text-red {
+    color: var(--cor-destaque-red);
+}
+
+.hidden {
+    display: none !important;
+}
+
+.fade-in {
+    opacity: 1 !important;
+}
+
+
+.botao-voltar {
+    margin-top: 80px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: clamp(18px, 5vw, 24px);
+    font-weight: 600;
+    text-transform: uppercase;
+    width: 100%;
+    max-width: 290px;
+    color: var(--cor-texto);
+    background-color: transparent;
+    border: var(--borda-padrao);
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+}
+
+.botao-voltar:hover {
+    background-color: var(--cor-texto);
+    color: var(--cor-fundo-ui);
+    border-color: var(--cor-texto);
+    transform: scale(110%);
+}
+
+/* ==========================================================================
+   5. MENU PRINCIPAL
+   ========================================================================== */
+#game-menu h1 {
+    font-size: clamp(3rem, 15vw, 10rem);
+    line-height: 1;
+    margin-top: 0;
+    text-align: center;
+    color: var(--cor-texto);
+    font-family: 'Metal Mania', Arial, Helvetica, sans-serif;
+}
+
+#game-menu h2 {
+    font-size: clamp(2rem, 10vw, 7.5rem);
+    margin-top: -10px; /* Ajustado para mobile */
+    margin-bottom: 30px;
+    text-align: center;
+    color: var(--cor-texto);
+}
+
+/* GAME CHAPTERS & CONFIG - Títulos Fluidos */
+#game-chapters h2,
+#game-config h2,
+#game-about h2 {
+    /* Reduzi drasticamente o 160px para caber no celular */
+    font-size: clamp(2.5rem, 10vw, 6rem); 
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: center;
+    line-height: 1.1;
+}
+
+#game-menu nav {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 30px; 
+}
+
+nav button {
+    font-family: 'montserrat', Courier, monospace;
+    font-size: clamp(18px, 5vw, 24px);
+    font-weight: 600;
+    text-transform: uppercase;
+    width: 100%;
+    max-width: 290px;
+    color: var(--cor-texto);
+    background-color: var(--cor-fundo-ui);
+    border: var(--borda-padrao);
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+}
+
+nav button:hover {
+    background-color: var(--cor-texto);
+    color: var(--cor-fundo-ui);
+    transform: scale(110%);
+}
+
+/* ==========================================================================
+   6. CAPÍTULOS
+   ========================================================================== */
+
+
+#game-chapters h2 {
+    font-family: 'Metal Mania', Arial, Helvetica, sans-serif;
+    color: var(--cor-texto);
+}
+
+.chapters-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.chapters-grid p {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--cor-texto);
+    margin-bottom: 14px;
+}
+
+/* Estilo das Portas */
+.door-container {
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+}
+
+.door-container:hover {
+    transform: scale(110%);
+}
+
+.door {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--cor-texto);
+    margin-bottom: 14px;
+}
+
+.door img {
+    width: clamp(100px, 30vw, 150px); 
+    max-width: 100%;
+    color: var(--cor-texto);
+    margin: 0px 0px 0px 10px;
+}
+
+.door-container p {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 24px;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ==========================================================================
+   7. GAMEPLAY
+   ========================================================================== */
+#game-play {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--cor-fundo-ui);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    overflow: hidden; 
+}
+
+/* Efeito de Scanlines (Específico da Gameplay) */
+#game-play::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(to bottom, rgba(18,16,16,0) 50%, rgba(0,0,0,0.25) 50%);
+    background-size: 100% 4px;
+    z-index: 150; 
+    pointer-events: none;
+}
+
+/* Container Principal do Jogo */
+#game-container {
+    display: flex;
+    flex-direction: row; 
+    width: 90vw;        
+    max-width: 1200px;  
+    height: 85vh;       
+    max-height: 800px;
+    background-color: var(--cor-fundo-dark);
+    border: 4px double var(--cor-texto); 
+    position: relative;
+    z-index: 9999;
+    box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 1); 
+}
+
+/* Lado Esquerdo: Imagem/Vídeo */
+.frame-imagem {
+    flex: 6; 
+    position: relative; 
+    border-right: 4px double var(--cor-texto); 
+    overflow: hidden;   
+    background-color: #111;
+}
+
+#cena-imagem, 
+#cena-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;    
+    object-position: center; 
+    display: block;       
+}
+
+/* Lado Direito: Conteúdo e Texto */
+.conteudo {
+    flex: 4; 
+    display: flex;
+    flex-direction: column; 
+    background-color: var(--cor-fundo-ui);
+    padding: 20px;
+    justify-content: space-between; 
+}
+
+#texto-area {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    border: var(--borda-padrao);
+    background-color: var(--cor-fundo-ui);
+    padding: 15px;
+    margin-bottom: 20px;    
+    position: relative;
+    overflow: hidden;
+}
+
+#texto-historia {
+    color: var(--cor-texto);
+    font-family: 'Lora', serif;
+    font-size: 23px;
+    line-height: 140%;
+    scrollbar-color: var(--cor-texto) #ffffff00;
+    scrollbar-width: auto;
+    height: 100%;
+    overflow-y: auto;
+    padding-right: 10px;
+    padding-bottom: 40px; 
+}
+
+/* Scrollbar Personalizada (Chrome/Safari) */
+#texto-historia::-webkit-scrollbar {
+    width: 14px;
+}
+#texto-historia::-webkit-scrollbar-track {
+    background: var(--cor-texto);
+    border-radius: 4px;
+}
+#texto-historia::-webkit-scrollbar-thumb {
+    background-color: var(--cor-texto);
+    border-radius: 4px;
+}
+
+/* Botões de Ação na Gameplay */
+#btn-pular {
+    position: absolute;
+    bottom: 10px;
+    right: 30px;
+    background-color: transparent;
+    border: 1px solid var(--cor-texto);
+    color: var(--cor-texto);
+    font-family: 'DotGothic16', sans-serif;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px 10px;
+    z-index: 20;
+    transition: 0.2s;
+}
+
+#btn-pular:hover {
+    color: var(--cor-fundo-ui);
+    border-color: var(--cor-texto);
+    background-color: var(--cor-texto);
+}
+
+#btn-replay {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: transparent; 
+    border: var(--borda-padrao);
+    color: var(--cor-texto);
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+}
+
+#btn-replay:hover {
+    background-color: var(--cor-fundo-ui);
+    color: var(--cor-texto);
+    border: var(--borda-padrao);
+    transform: scale(110%);
+}
+
+#btn-replay i {
+    font-size: 24px;
+}
+
+/* Container de Escolhas */
+#opcoes-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#opcoes-container button {
+    background-color: var(--cor-fundo-ui);
+    color: var(--cor-texto);
+    border: var(--borda-padrao);
+    padding: 12px 15px;
+    font-family: 'montserrat', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+#opcoes-container button:hover {
+    color: var(--cor-fundo-ui);
+    background-color: var(--cor-texto);
+    border: var(--borda-padrao);
+    font-weight: 600;
+    transform: scale(105%);
+}
+
+/* Botão Menu principal, botão range volume gameplay */
+.btn-back {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    bottom: auto;
+    background: transparent;
+    color: var(--cor-texto);
+    border: var(--borda-padrao);
+    font-size: 24px;
+    font-weight: 600;
+    text-transform: uppercase;
+    width: auto;
+    padding: 10px 20px;
+    font-family: 'VT323', monospace;
+    cursor: pointer;
+    z-index: 10000;
+    opacity: 0.3;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.btn-back:hover {
+    background-color: var(--cor-texto);
+    border-color: var(--cor-texto);
+    color: var(--cor-fundo-ui);
+    transition: 0.3s ease-in-out;
+    transform: scale(110%);
+    opacity: 1;
+}
+
+.ingame-controls {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: transparent;
+    padding: 10px 20px;
+    border: 1px solid var(--cor-texto);
+    z-index: 10000;
+    opacity: 0.3;
+    transition: opacity 0.3s ease-in-out;
+    border-radius: 4px;
+}
+
+.ingame-controls:hover {
+    opacity: 1;
+    border-color: var(--cor-texto);
+    transition: 0.3s ease-in-out;
+    transform: scale(110%);
+}
+
+.ingame-controls i {
+    color: var(--cor-texto);
+    font-size: 24px;
+}
+
+/* Input Range da Gameplay */
+.ingame-controls input[type=range] {
+    -webkit-appearance: none; 
+    appearance: none;
+    width: 100px;
+    background: transparent; 
+    cursor: pointer;
+}
+
+.ingame-controls input[type=range]:focus {
+    outline: none;
+}
+
+.ingame-controls input[type=range]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 4px; 
+    cursor: pointer;
+    background: var(--cor-texto); 
+    border-radius: 2px;
+}
+
+.ingame-controls input[type=range]::-moz-range-track {
+    width: 100%;
+    height: 4px;
+    cursor: pointer;
+    background: var(--cor-texto);
+    border-radius: 2px;
+}
+
+.ingame-controls input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 14px; 
+    width: 14px;
+    border-radius: 50%;
+    background: var(--cor-texto); 
+    cursor: pointer;
+    margin-top: -5px; 
+    box-shadow: 0 0 2px rgba(0,0,0,0.5); 
+}
+
+.ingame-controls input[type=range]::-moz-range-thumb {
+    height: 14px;
+    width: 14px;
+    border: none; 
+    border-radius: 50%;
+    background: var(--cor-texto);
+    cursor: pointer;
+    box-shadow: 0 0 2px rgba(0,0,0,0.5);
+}
+
+/* Intro/Abertura do Capítulo */
+#intro-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--cor-fundo-dark);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+.texto-intro {
+    color: var(--cor-texto);
+    font-family: 'Courier New', monospace;
+    text-align: center;
+    opacity: 0;
+    position: absolute;
+}
+
+#aviso-fones {
+    font-size: 80px;
+    transition: opacity 8s ease-in-out; 
+}
+
+#intro-titulo {
+    font-size: 80px;
+    transition: opacity 5s ease-in-out;
+}
+
+#btn-start-game {
+    margin-top: 150px;
+    padding: 15px 40px;
+    font-size: 24px;
+    font-weight: 600;
+    background-color: transparent;
+    border: var(--borda-padrao);
+    color: var(--cor-texto);
+    cursor: pointer;
+    z-index: 20;
+}
+
+#btn-start-game:hover {
+    background-color: var(--cor-texto);
+    border-color: var(--cor-texto);
+    color: var(--cor-fundo-ui);
+    transition: 0.3s ease-in-out;
+    transform: scale(110%);
+}
+
+#btn-skip-intro {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    background-color: transparent;
+    border: var(--borda-padrao);
+    color: var(--cor-texto);
+    padding: 15px 25px;
+    font-size: 24px;
+    font-weight: 600;
+    font-family: 'VT323', monospace;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    z-index: 1000;
+    transition: 0.3s;
+    display: none;
+}
+
+#btn-skip-intro:hover {
+    background: var(--cor-texto);
+    color: var(--cor-fundo-dark);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    border-color: var(--cor-texto);
+    transform: scale(110%);
+}
+
+/* ==========================================================================
+   8. SOBRE
+   ========================================================================== */
+.scroll-box {
+    width: 100%;
+    max-width: 800px; 
+    max-height: 55vh; 
+    
+    /* === A CORREÇÃO DO SCROLL === */
+    overflow-y: auto;   /* Scroll vertical permitido */
+    overflow-x: hidden; /* Scroll horizontal BLOQUEADO */
+    box-sizing: border-box; /* O padding não aumenta a largura da caixa */
+    
+    padding: 20px;
+    margin: 10px 0;
+    
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--cor-texto);
+    border-radius: 8px;
+}
+
+.scroll-box::-webkit-scrollbar {
+    width: 8px;
+}
+.scroll-box::-webkit-scrollbar-thumb {
+    background: var(--cor-destaque-red);
+    border-radius: 4px;
+}
+.scroll-box::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+#game-about h2 {
+    font-family: 'metal mania', Courier, monospace;
+    color: var(--cor-texto);
+}
+
+#game-about p {
+    width: 100%;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 19px;
+    font-weight: 400;
+    color: var(--cor-texto);
+    overflow-wrap: break-word; 
+    word-wrap: break-word; 
+    hyphens: auto;
+}
+
+.about-content p {
+    width: 100%; /* Remove o fixo de 1240px que quebrava o mobile */
+    font-size: clamp(14px, 4vw, 19px); /* Texto legível em qualquer tela */
+    text-align: justify;
+    margin-bottom: 10px;
+}
+
+/* Redes Sociais lado a lado no mobile e PC */
+.social-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 20px;
+}
+.social-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.social-block span {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 24px;
+    font-weight: 400;
+    text-align: center;
+    color: var(--cor-texto);
+}
+
+#game-about h3 {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 24px;
+    font-weight: 400;
+    text-align: center;
+    color: var(--cor-texto);
+}
+
+.creator-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.social-media,
+.social-media-jamili {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 19px;
+    font-weight: 400;
+    color: var(--cor-texto);
+    margin-bottom: 24px;
+}
+
+.social-media-jamili {
+    margin-top: 24px;
+}
+
+.social {
+  display: flex;
+  gap: 20px;
+}
+
+.social a {
+  color: var(--cor-texto);
+  font-size: 28px;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.social a:hover {
+  transform: scale(1.15);
+}
+
+#game-about button {
+    margin-top: 24px;
+}
+
+/* ==========================================================================
+   9. CONFIGURAÇÕES
+   ========================================================================== */
+#game-config {
+    justify-content: center; 
+}
+
+   #game-config h2 {
+    font-family: 'metal mania', Courier, monospace;
+    color: var(--cor-texto);
+}
+
+.settings-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+    width: 100%;
+    max-width: 500px;
+}
+
+/* Quando a tela for maior que tablet, volta para linha */
+@media (min-width: 600px) {
+    .option {
+        flex-direction: row;
+        gap: 12px;
+    }
+}
+
+label {
+    font-size: clamp(18px, 5vw, 28px);
+    text-align: center;
+}
+
+.option {
+    width: 100%;
+    color: var(--cor-fundo-ui);
+    display: flex;
+    align-items: center; 
+    justify-content: center;
+    gap: 12px;
+    flex-direction: column; /* No celular, label em cima, input embaixo */
+    gap: 5px;
+    margin-bottom: 15px;
+}
+
+label {
+    font-size: 28px;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 600;
+    color: var(--cor-texto);
+    padding-right: 14px;
+    cursor: default;
+}
+
+/* Checkbox Tela Cheia */
+#fullscreen-btn {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border: var(--borda-padrao);
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+    vertical-align: middle;
+}
+
+#fullscreen-btn:checked {
+    background-color: var(--cor-texto);
+    border-color: var(--cor-texto);
+}
+
+#fullscreen-btn:checked::after {
+    content: '✔';
+    font-size: 20px;
+    color: var(--cor-fundo-ui);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.slider {
+    -webkit-appearance: none; 
+    appearance: none;
+    width: 200px;
+    background: transparent;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.slider:focus {
+    outline: none;
+}
+
+.slider::-webkit-slider-runnable-track,
+.slider::-moz-range-track {
+    width: 100%;
+    height: 6px;
+    background: var(--cor-texto);
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb,
+.slider::-moz-range-thumb {
+    -webkit-appearance: none;
+    border: none;
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    background: var(--cor-texto);
+    margin-top: -6px; /* Apenas para webkit, Firefox ajusta sozinho */
+    box-shadow: 0 0 4px rgba(0,0,0,0.8);
+    cursor: pointer;
+}
+
+#vol-menu-display {
+    display: inline-block;
+    width: 50px;
+    text-align: right;
+    margin-left: 10px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--cor-texto);
+    vertical-align: middle;
+}
+
+#velocidade-texto-lb, #velocidade-texto {
+    margin-top: 30px;
+}
+
+.option select {
+    background: transparent;
+    color: var(--cor-texto);
+    border: var(--borda-padrao);
+    padding: 8px 32px 8px 10px;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg fill='azure' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px;
+}
+
+.option select:hover {
+    border-color: var(--cor-texto);
+    outline: none;
+    background-color: var(--cor-fundo-ui);
+    color: var(--cor-texto);
+}
+
+.option select:focus {
+    border-color: var(--cor-texto);
+    outline: none;
+}
+
+.option option {
+    background: var(--cor-fundo-ui);
+    color: var(--cor-texto);
+}
+
+
+
+/* ==========================================================================
+   10. RESPONSIVIDADE gameplay
+   ========================================================================== */
+@media (max-width: 1290px) and (max-height: 950px) {
+    
+    /* === AJUSTE DE CONTAINER === */
+    #game-container {
+        margin-top: 0; 
+        width: 100vw;
+        height: 100dvh;
+        border: none;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .frame-imagem {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+        z-index: 1;
+    }
+
+    /* === TEXTO FLUTUANTE (VISUAL NOVEL STYLE) === */
+    .conteudo {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 95%;
+        height: auto;
+        min-height: 200px;
+        max-height: 40vh;
+        
+        background: linear-gradient(to top, rgba(5, 0, 20, 0.95) 0%, rgba(5, 0, 20, 0.7) 100%);
+        backdrop-filter: blur(8px);
+        
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 4px;
+        padding: 20px;
+        z-index: 10;
+        
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+
+    #texto-area {
+        margin-bottom: 10px;
+        padding: 0;
+        border: none;
+        background: transparent;
+    }
+
+    #texto-historia {
+        font-size: 1.1rem; 
+        line-height: 1.5;
+        max-height: 150px;
+        text-shadow: 1px 1px 2px black; 
+    }
+
+    /* === BOTÕES DE ESCOLHA (FÁCIL DE CLICAR) === */
+    #opcoes-container {
+        gap: 12px;
+        width: 100%;
+    }
+
+    #opcoes-container button {
+        font-size: 16px;
+        padding: 15px; 
+        background-color: rgba(0, 0, 0, 0.5);
+        border: 1px solid var(--cor-texto);
+        width: 100%;
+        text-align: left;
+    }
+
+    .btn-back {
+        position: fixed;
+        top: max(6px, env(safe-area-inset-top));
+        left: 6px;
+        padding: 9px 10px;
+        font-size: 18px;
+        background: rgba(0,0,0,0.5);
+        border-radius: 2px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10001;
+    }
+
+    .ingame-controls {
+        position: fixed;
+        top: max(6px, env(safe-area-inset-top));
+        width: 110px;
+        height: 25.5px;
+        background: rgba(0,0,0,0.5);
+        border-radius: 2px;
+        padding: 8px 15px;
+        z-index: 10001;
+    }
+
+    .ingame-controls i {
+        color: var(--cor-texto);
+        font-size: 14px;
+    }
+
+    .ingame-controls input[type=range] {
+        appearance: none;
+        width: 80px;
+        background: transparent; 
+        cursor: pointer;
+        -webkit-appearance: none; 
+    }
+
+}

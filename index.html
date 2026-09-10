@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kodoku no Yami</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Metal+Mania&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="video-layer">
+        <video id="bg-video" src="img/intro-kodoku-1.mp4" autoplay muted playsinline></video>
+    </div>
+
+    <canvas id="noiseCanvas"></canvas>
+
+    <section id="game-menu" class="screen active">
+        <h1>Kodoku no <span class="text-red">Yami</span></h1>
+        <h2>孤独の<span class="text-red">闇</span></h2>
+
+        <nav>
+            <button onclick="changeScreen('game-chapters')">Começar</button>
+            <button onclick="changeScreen('game-about')">Sobre</button>
+            <button onclick="changeScreen('game-config')">Configurações</button>
+        </nav>
+    </section>
+
+    <section id="game-chapters" class="screen hidden">
+        <h2>Escolha seu destino</h2>
+        <div class="chapters-grid">
+            <div class="door-container" onclick="selecionarCapitulo(1)">
+                <div class="door"><img src="img/door-8-512.png" alt="Porta aberta"></div>
+                <p>Capítulo 1</p>
+            </div>
+
+            <!--<div class="door-container locked" id="btn-cap-2" onclick="selecionarCapitulo(2)">
+                <div class="door"><img id="img-cap-2" src="img/cadeado-fechado.png" alt="Cadeado"></div>
+                <p id="titulo-cap-2">Bloqueado</p> 
+            </div>-->
+
+            <!--<div class="door-container locked" id="btn-cap-3" onclick="selecionarCapitulo(3)">
+                <div class="door"><img id="img-cap-3" src="img/cadeado-fechado.png" alt="Cadeado"></div>
+                <p id="titulo-cap-3">Bloqueado</p>
+            </div>-->
+        </div>
+        <button class="botao-voltar" onclick="changeScreen('game-menu')">Voltar</button>
+    </section>
+
+    <section id="game-play" class="screen hidden">
+        <div id="intro-overlay">
+            <button id="btn-skip-intro" onclick="pularAbertura()">
+                <i class="fa-solid fa-forward-step"></i> PULAR ABERTURA
+            </button>
+
+            <h2 id="aviso-fones" class="texto-intro">
+                Para uma melhor experiência,<br>use fones de ouvido.
+            </h2>
+            <h1 id="intro-titulo" class="texto-intro hidden">
+                CAPÍTULO 1<br>
+                <span style="font-size: 0.6em">O Hospital de Setembro</span>
+            </h1>
+            <button id="btn-start-game" class="btn-escolha hidden" onclick="iniciarJogoReal()">INICIAR</button>
+        </div>
+        <div id="game-ui" class="hidden">
+            <div class="ingame-controls">
+                <i class="fa-solid fa-volume-high"></i>
+                <input type="range" min="0" max="100" value="50" oninput="ajustarVolumeAmbiente(this.value)">
+                <span class="ajustar-volume"></span>
+            </div>
+        <div id="game-container">
+            <div class="frame-imagem">
+                <img id="cena-imagem" src="" alt="Cena Atual">
+                <video id="cena-video" class="hidden" muted playsinline>
+                </video>
+                <button id="btn-replay" class="hidden" onclick="replayVideo()">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </button>
+            </div>
+            <div class="conteudo">
+                <div id="texto-area">
+                    <div id="texto-historia"></div>
+                    <button id="btn-pular" onclick="pularDigitacao()">
+                        <i class="fa-solid fa-forward"></i> Pular Texto
+                    </button>
+                </div>
+                <div id="opcoes-container"></div>
+            </div>
+        </div>
+        <button class="btn-back" onclick="voltarAoMenu()">Menu Pricipal</button>
+        </div>
+    </section>
+
+    <section id="game-about" class="screen hidden">
+    <h2 class="fluid-title">Sobre</h2>
+
+    <div class="scroll-box">
+        <div class="about-content">
+            <p><strong>Kodoku no Yami – 孤独の闇</strong> é uma experiência interativa de horror psicológico e mistério, feita para rodar diretamente no navegador. Um jogo point and click visual onde cada clique pode revelar segredos ocultos, histórias esquecidas e verdades que talvez fosse melhor não conhecer.</p>
+            <br>
+            <p>Aqui, exploramos <strong>lendas urbanas, relatos reais e mistérios da internet japonesa,</strong> sempre com respeito às histórias e às pessoas envolvidas. Nenhuma imagem gráfica ou explícita será usada, mas a atmosfera sombria e a narrativa envolvente podem causar desconforto—afinal, o medo muitas vezes está nas entrelinhas.</p>
+            <br>
+            <p>Prepare-se para uma jornada onde a solidão encontra a escuridão, e cada decisão pode levar a diferentes desfechos. Você está pronto para desvendar os mistérios que se escondem nas sombras?</p>
+            <br>
+            <p style="font-size: 0.8em; opacity: 0.7;">
+                <em>Disclaimer: Algumas imagens utilizadas são retiradas de fontes da internet, devidamente creditadas sempre que possível. Caso alguma imagem esteja sob direitos autorais e precise ser removida ou ajustada, entre em contato conosco.</em>
+            </p>
+        </div>
+
+        <div class="creator-content">
+            <h3>Criado por <br><strong>William</strong> e <strong>Jamili</strong></h3>
+            
+            <div class="social-wrapper">
+                <div class="social-block">
+                    <span>William</span>
+                    <div class="social">
+                        <a href="https://www.instagram.com/nami_naka1/" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="https://github.com/WilliamMarquesJr" target="_blank"><i class="fa-brands fa-github"></i></a>
+                    </div>
+                </div>
+
+                <div class="social-block">
+                    <span>Jamili</span>
+                    <div class="social">
+                        <a href="https://www.instagram.com/jami_n4?igsh=MWQ0dHFkZHdhZDZpdQ==" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" target="_blank"><i class="fa-brands fa-github"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <button class="botao-voltar" onclick="changeScreen('game-menu')">Voltar</button>
+    </section>
+
+    <section id="game-config" class="screen hidden">
+        <h2>Configurações</h2>
+        <div class="settings-panel">
+            <div class="option">
+                <label>Modo Tela Cheia:</label>
+                <input type="checkbox" id="fullscreen-btn" onclick="toggleFullscreen()">
+            </div>
+
+
+            <!--buscar src de áudio e de foto-->
+            <img src="audio/" alt="">
+
+
+
+            <div class="option">
+                <label>Volume do Menu</label> <input type="range" min="0" max="100" value="15" class="slider" oninput="ajustarVolumeMenu(this.value)">
+                <span id="vol-menu-display">15</span>
+            </div>
+            <div class="option">
+                <label for="velocidade-texto" id="velocidade-texto-lb">Velocidade do texto</label>
+                <select id="velocidade-texto" onchange="mudarVelocidade(this.value)">
+                    <option value="190">Lento</option>
+                    <option value="50" selected>Normal</option>
+                    <option value="7">Rápido</option>
+                </select>
+            </div>
+        </div>
+        <button class="botao-voltar" onclick="changeScreen('game-menu')">Voltar</button>
+    </section>
+
+    <audio id="bg-music" loop></audio>
+    <audio id="sfx-player"></audio>
+    <audio id="sfx-btn-click" src="audio/audio-botao-3.mp3"></audio>
+    <audio id="sfx-story-btn" src="audio/chuva-bg-capitulo.mp3"></audio>
+
+    <script src="script.js"></script>
+</body>
+</html>
