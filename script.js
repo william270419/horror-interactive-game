@@ -711,12 +711,19 @@ function digitarTexto(texto) {
 }
 
 function pularDigitacao() {
-    if (estadoJogo.intervaloDigitacao) clearInterval(estadoJogo.intervaloDigitacao);
+    if (estadoJogo.intervaloDigitacao) {
+        clearInterval(estadoJogo.intervaloDigitacao);
+    }
+
     const el = document.getElementById("texto-historia");
     const btnPular = document.getElementById("btn-pular");
+
     el.innerHTML = estadoJogo.textoAtualCompleto;
-    el.scrollTop = el.scrollHeight;
-    if (btnPular) btnPular.style.display = "none";
+    el.scrollTop = 0;
+
+    if (btnPular) {
+        btnPular.style.display = "none";
+    }
 }
 
 function mudarVelocidade(val) {
