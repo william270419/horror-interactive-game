@@ -130,7 +130,7 @@ const bancoDeCapitulos = {
                 video: "img/cena_11.mp4",
                 opcoes: [ 
                     { texto: "▶ PRIMEIRO ANDAR", proximo: "cena-12" },
-                    { texto: "▶ SEGUNDO ANDAR", proximo: "futuro" }
+                    { texto: "▶ SEGUNDO ANDAR (em breve)", proximo: "futuro" }
                 ]
             },
             "cena-12": {
